@@ -1,0 +1,48 @@
+
+server:
+  port: 10100
+  
+spring:
+  application:
+      name: cloud-server
+  security:
+    user:
+      name: root
+      password: 123456
+  freemarker:
+    prefer-file-system-access: false
+#  rabbitmq: 
+#    host: 127.0.0.1
+#    port: 5672
+#    username: guest
+#    password: guest
+  cloud:
+    config:
+      label: master
+      name: jacliuConfig-server
+      server:
+        git:
+          uri: https://github.com/jackliul/jacliuConfig
+          search-paths:
+          - oms-user
+          - oms-back
+          
+eureka:
+  server:
+    enable-self-preservation: false
+    eviction-interval-timer-in-ms: 4000 # 清理间隔（单位毫秒，默认是60*1000）
+  instance:
+    hostname: 127.0.0.1
+    virtual-host-name: cloud-server
+    preferIpAddress: true
+    #instance-id: ${spring.cloud.client.ipAddress}:${server.port}         将Instance ID设置成IP:端口的形式
+    #lease-renewal-interval-in-seconds: 10000
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+
+logging:
+  file:
+    logs/${spring.application.name}.log

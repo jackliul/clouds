@@ -1,0 +1,90 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.0.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+		maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath 'org.hidetake:gradle-ssh-plugin:2.9.0'
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.hidetake.ssh'
+
+group = 'com.jacliu.test'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
+	maven { url "https://repo.spring.io/milestone" }
+}
+
+
+ext {
+	springCloudVersion = 'Finchley.M9'
+	env = System.getProperty("env") ?: "dev"
+    realHost = System.getProperty("realHost") ?: '192.168.8.34'  
+    realUser = System.getProperty("realUser") ?:'root'  
+    realPassword = System.getProperty("realPassword") ?:'ItVm905-4' 
+    cmd = System.getProperty("cmd") ?:'openBrowser.bat ' + realHost
+}
+
+dependencies {
+	compile 'cn.hutool:hutool-all:4.0.8'
+
+	compile('org.springframework.boot:spring-boot-devtools')
+	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-starter-actuator')
+	compile('org.springframework.cloud:spring-cloud-starter-config')
+	compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+bootRun {
+    jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
+}
+
+ssh.settings {  
+  knownHosts = allowAnyHosts  
+}  
+
+remotes {  
+  	deployServer {  
+	    role 'masterNode'
+	    host = realHost  
+	    user = realUser  
+	    password = realPassword  
+  }
+}  
+
+// –spring.profiles.active=dev -Dlogging.path=/
+def buildName = "$rootProject.name"+"-"+"$version"
+def buildJar = "$rootProject.name"+"-"+"$version"+".jar"
+task aaa(dependsOn:build) <<{
+	println(buildDir.toString() + '/libs/'+buildName);
+}
+task deploy(dependsOn:build) << { 
+  ssh.run {  
+    session(remotes.deployServer) {  
+    	execute ' rm -rf /usr/local/user_temp/oms-user-facade-0.0.1-SNAPSHOT.jar '
+    	execute ' kill -9 ` ps -ef | grep  oms-user-facade-0.0.1-SNAPSHOT  | awk \'NR==1 { print $2 }\' ` '
+		put from: buildDir.toString() + '/libs/oms-user-facade-0.0.1-SNAPSHOT.jar', into: '/usr/local/user_temp/'
+		execute ' nohup /usr/local/apps/jdk1.8.0_151/bin/java -jar /usr/local/user_temp/oms-user-facade-0.0.1-SNAPSHOT.jar --server.port=10100 >/usr/local/user_temp/logs/oms-user-facade.log 2>&1 & '
+    }  
+  }  
+}
