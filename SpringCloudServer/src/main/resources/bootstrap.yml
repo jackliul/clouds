@@ -1,4 +1,12 @@
 
+encrypt:
+    key: jacliu
+    keyStore:
+      location: classpath:/server.jks
+      password: 123456
+      alias: jacliuKey
+      secret: jacliuSecret
+
 eureka:
   server:
     enable-self-preservation: false

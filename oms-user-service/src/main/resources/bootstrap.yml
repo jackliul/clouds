@@ -1,30 +1,43 @@
 
 server:
-  port: 10101
+  port: 10103
 eureka:
   client:
-    healthcheck:
-      enabled:true 
+    fetchRegistry:
+      true
+    registryFetchIntervalSeconds:
+      30
     service-url:
       defaultZone: http://root:123456@localhost:10100/eureka/ # root:123456@
   instance:
+#    statusPageUrlPath: ${management.context-path}/info
+#    healthCheckUrlPath: ${management.context-path}/health
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
 
 spring:
   application:
-    name: omsUser
+    name: omsUserService
+  rabbitmq: 
+    host: 192.168.8.114
+    port: 5672
+    username: admin
+    password: admin
   cloud:
     config:
       label: master
       profile: dev
-      uri: http://localhost:10100/
+      uri: http://root:123456@localhost:10100/ #localhost 192.168.8.114
+      username: root
+      password: 123456
       discovery: 
         enabled: true #启用发现服务功能
         service-id: microservice-config-server #指定服务名称
-  #config:
-    #name: jacliuConfig-client
-  
+#    bus:
+#      trace:
+#        enabled:
+#          true
+          
 logging:
   file:
     logs/${spring.application.name}.log

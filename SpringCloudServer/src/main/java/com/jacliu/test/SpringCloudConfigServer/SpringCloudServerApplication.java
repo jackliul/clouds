@@ -12,17 +12,5 @@ public class SpringCloudServerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpringCloudServerApplication.class, args);
-		aaa();
-		bbbc();
 	}
-
-	private static void bbbc() {
-		System.out.println("fdfdfdf");
-	}
-
-	private static void aaa() {
-		System.out.println("dfdfdf");
-
-	}
-
 }

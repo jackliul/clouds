@@ -2,8 +2,19 @@
 server:
   port: 10100
   
+#management:
+#  server:
+#    servlet:
+#      context-path: 
+#        /admin
+        
 spring:
   application:
+#      admin: 
+#        enabled:
+#          true
+#        jmx-name:
+#          org.springframework.boot:type=Admin,name=SpringApplication # JMX name of the application admin MBean.
       name: cloud-server
   security:
     user:
@@ -11,26 +22,32 @@ spring:
       password: 123456
   freemarker:
     prefer-file-system-access: false
-#  rabbitmq: 
-#    host: 127.0.0.1
-#    port: 5672
-#    username: guest
-#    password: guest
+  rabbitmq: 
+    host: 192.168.8.114
+    port: 5672
+    username: admin
+    password: admin
   cloud:
-    config:
-      label: master
-      name: jacliuConfig-server
-      server:
+      config:
+       label: master
+       name: jacliuConfig-server
+       server:
         git:
           uri: https://github.com/jackliul/jacliuConfig
           search-paths:
           - oms-user
           - oms-back
+          #username: root
+          #password: 123456
+#      bus:
+#        trace:
+#         enabled:
+#           true
           
 eureka:
   server:
     enable-self-preservation: false
-    eviction-interval-timer-in-ms: 4000 # 清理间隔（单位毫秒，默认是60*1000）
+    eviction-interval-timer-in-ms: 90000 # 清理间隔（单位毫秒，默认是60*1000）
   instance:
     hostname: 127.0.0.1
     virtual-host-name: cloud-server
@@ -43,6 +60,22 @@ eureka:
     service-url:
       defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
 
+zuul: 
+  prefix: /techouse #为zuul设置一个公共的前缀
+  #ignoredServices: '*'
+  routes:
+    cloud-client: #随便定义，当不存在serviceId时，默认该值为serviceId（就是注册服务的名称，属性spring.application.name）
+      path: /usersystem/** #匹配/techouse/usersystem/** 均路由到cloud-client
+      serviceId: cloud-client #指定路由到的serviceId
+      
+#ribbon:
+#  eureka:
+#    enabled: false #配置zuul路由时用将此属性设置为false
+#
+#cloud-client:
+#  ribbon:
+#    listOfServers: 127.0.0.1:8800 #为cloud-client服务指定一组服务地址，应该是用于负载均衡
+      
 logging:
   file:
     logs/${spring.application.name}.log

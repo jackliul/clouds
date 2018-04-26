@@ -17,7 +17,9 @@
 *.zip
 *.tar.gz
 *.rar
+LOG_FILE_IS_UNDEFINED*
 
+*.gradle/
 *.class
 *.project
 *.settings
