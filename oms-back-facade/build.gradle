@@ -17,15 +17,14 @@ apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.hidetake.ssh'
-apply plugin: 'maven'
 
 group = 'com.jacliu.test'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {
+	mavenLocal()
 	mavenCentral()
-	maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
 	maven { url "https://repo.spring.io/milestone" }
 }
 
@@ -35,17 +34,19 @@ ext {
 	env = System.getProperty("env") ?: "dev"
     realHost = System.getProperty("realHost") ?: '192.168.8.34'  
     realUser = System.getProperty("realUser") ?:'root'  
-    realPassword = System.getProperty("realPassword") ?:'ItVm905-4' 
+    realPassword = System.getProperty("realPassword") ?:'12345678' 
     cmd = System.getProperty("cmd") ?:'openBrowser.bat ' + realHost
 }
 
 dependencies {
-	compile 'cn.hutool:hutool-all:4.0.8'
-	compile 'com.h2database:h2:1.4.192'
+	compile 'com.jacliu.test:oms-tcore:0.0.1-SNAPSHOT'
 
 	compile('org.springframework.boot:spring-boot-devtools')
+	compile('org.springframework.boot:spring-boot-starter-web')
 	compile('org.springframework.boot:spring-boot-starter-actuator')
+	compile('org.springframework.cloud:spring-cloud-starter-config')
 	compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
+	compile('org.springframework.cloud:spring-cloud-starter-openfeign')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
@@ -55,16 +56,8 @@ dependencyManagement {
 	}
 }
 
-install {
-    repositories.mavenInstaller {
-        pom.version = "$project.version"
-        pom.artifactId = "$project.name"
-        pom.groupId = "$project.group"
-    }
-}
-
 bootRun {
-    // jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5008"
+   // jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=6005"
 }
 
 ssh.settings {  
@@ -80,20 +73,13 @@ remotes {
   }
 }  
 
-install {
-    repositories.mavenInstaller {
-        pom.version = "$project.version"
-        pom.artifactId = "$project.name"
-        pom.groupId = "$project.group"
-    }
-}
 task deploy(dependsOn:build) << { 
   ssh.run {  
     session(remotes.deployServer) {  
-    	execute ' rm -rf /home/clouds/oms-core-0.0.1-SNAPSHOT.jar '
-    	execute ' kill -9 ` ps -ef | grep  oms-core-0.0.1-SNAPSHOT  | awk \'NR==1 { print $2 }\' ` '
-		put from: buildDir.toString() + '/libs/oms-core-0.0.1-SNAPSHOT.jar', into: '/home/clouds/'
-		execute ' nohup /home/jdkHome/jdk8/bin/java -jar /home/clouds/oms-core-0.0.1-SNAPSHOT.jar --server.port=10100 >/home/clouds/logs/oms-core.log 2>&1 & '
+    	execute ' rm -rf /home/clouds/oms-back-facade-0.0.1-SNAPSHOT.jar '
+    	execute ' kill -9 ` ps -ef | grep  oms-back-facade-0.0.1-SNAPSHOT  | awk \'NR==1 { print $2 }\' ` '
+		put from: buildDir.toString() + '/libs/oms-back-facade-0.0.1-SNAPSHOT.jar', into: '/home/clouds/'
+		execute ' nohup /home/apps/jdkHome/jdk8/bin/java -jar /home/clouds/oms-back-facade-0.0.1-SNAPSHOT.jar --server.port=10201 >/home/clouds/logs/oms-back-facade.log 2>&1 & '
     }  
   }  
 }

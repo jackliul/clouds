@@ -1,42 +1,41 @@
 
 server:
-  port: 10103
+  port: 10102
 eureka:
   client:
-    fetchRegistry:
-      true
-    registryFetchIntervalSeconds:
-      30
+    fetchRegistry: true
+    registryFetchIntervalSeconds: 30
     service-url:
-      defaultZone: http://root:123456@localhost:10100/eureka/ # root:123456@
+      defaultZone: http://root:123456@127.0.0.1:11000/eureka/ # root:123456@
   instance:
-#    statusPageUrlPath: ${management.context-path}/info
-#    healthCheckUrlPath: ${management.context-path}/health
+    hostname: 127.0.0.1
+    virtual-host-name: oms-user-service
+    lease-expiration-duration-in-seconds: 30
+    lease-renewal-interval-in-seconds: 10
     prefer-ip-address: true
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
+    ip-address: 127.0.0.1
+    statusPageUrlPath: ${eureka.instance.ip-address}:${server.port}/info
+    healthCheckUrlPath: ${eureka.instance.ip-address}:${server.port}/health
+    instance-id: ${eureka.instance.ip-address}:${server.port}
 
 spring:
   application:
     name: omsUserService
   rabbitmq: 
-    host: 192.168.8.114
-    port: 5672
+    host: 127.0.0.1
+    port: 5672 
     username: admin
     password: admin
   cloud:
     config:
       label: master
       profile: dev
-      uri: http://root:123456@localhost:10100/ #localhost 192.168.8.114
+      uri: http://root:123456@127.0.0.1:11000/
       username: root
       password: 123456
       discovery: 
-        enabled: true #启用发现服务功能
-        service-id: microservice-config-server #指定服务名称
-#    bus:
-#      trace:
-#        enabled:
-#          true
+        enabled: true
+        service-id: cloud-server #指定服务名称
           
 logging:
   file:

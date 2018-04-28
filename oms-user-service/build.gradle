@@ -3,6 +3,7 @@ buildscript {
 		springBootVersion = '2.0.1.RELEASE'
 	}
 	repositories {
+		//mavenLocal()
 		mavenCentral()
 		maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
 	}
@@ -18,28 +19,30 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.hidetake.ssh'
 
-group = 'com.jacliu.test'
+group = 'com.jacliu.test'  
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
-
-repositories {
-	mavenCentral()
-	maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
-	maven { url "https://repo.spring.io/milestone" }
-}
-
 
 ext {
 	springCloudVersion = 'Finchley.RC1'
 	env = System.getProperty("env") ?: "dev"
     realHost = System.getProperty("realHost") ?: '192.168.8.34'  
     realUser = System.getProperty("realUser") ?:'root'  
-    realPassword = System.getProperty("realPassword") ?:'ItVm905-4' 
-    cmd = System.getProperty("cmd") ?:'openBrowser.bat ' + realHost
+    realPassword = System.getProperty("realPassword") ?:'12345678' 
+    cmd = System.getProperty("cmd") ?:'openBrowser.bat ' + realHost 
+}
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
+	maven { url "https://repo.spring.io/milestone" }
 }
 
 dependencies {
 	compile 'cn.hutool:hutool-all:4.0.8'
+	compile 'com.jacliu.test:oms-tcore:0.0.1-SNAPSHOT'
+	compile 'com.jacliu.test:oms-user-dao:0.0.1-SNAPSHOT'
 
 	compile('org.springframework.boot:spring-boot-devtools')
 	compile('org.springframework.boot:spring-boot-starter-actuator')
@@ -50,6 +53,7 @@ dependencies {
 	compile('org.springframework.cloud:spring-cloud-starter-netflix-hystrix')
 	compile('org.springframework.cloud:spring-cloud-starter-netflix-zuul') 
 	testCompile('org.springframework.boot:spring-boot-starter-test')
+	
 }
 
 dependencyManagement {
@@ -59,7 +63,7 @@ dependencyManagement {
 }
 
 bootRun {
-    jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
+    //jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5007"
 }
 
 ssh.settings {  
@@ -75,19 +79,13 @@ remotes {
   }
 }  
 
-// –spring.profiles.active=dev -Dlogging.path=/
-def buildName = "$rootProject.name"+"-"+"$version"
-def buildJar = "$rootProject.name"+"-"+"$version"+".jar"
-task aaa(dependsOn:build) <<{
-	println(buildDir.toString() + '/libs/'+buildName);
-}
 task deploy(dependsOn:build) << { 
   ssh.run {  
     session(remotes.deployServer) {  
     	execute ' rm -rf /home/clouds/oms-user-service-0.0.1-SNAPSHOT.jar '
     	execute ' kill -9 ` ps -ef | grep  oms-user-service-0.0.1-SNAPSHOT  | awk \'NR==1 { print $2 }\' ` '
 		put from: buildDir.toString() + '/libs/oms-user-service-0.0.1-SNAPSHOT.jar', into: '/home/clouds/'
-		execute ' nohup /home/jdkHome/jdk8/bin/java -jar /home/clouds/oms-user-service-0.0.1-SNAPSHOT.jar --server.port=10100 >/home/clouds/logs/oms-user-service.log 2>&1 & '
+		execute ' nohup /home/apps/jdkHome/jdk8/bin/java -jar /home/clouds/oms-user-service-0.0.1-SNAPSHOT.jar --server.port=10100 >/home/clouds/logs/oms-user-service.log 2>&1 & '
     }  
   }  
 }

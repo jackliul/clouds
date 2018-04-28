@@ -1,5 +1,5 @@
 server:
-  port: 10101
+  port: 10201
 eureka:
   client:
     fetchRegistry: true
@@ -8,7 +8,7 @@ eureka:
       defaultZone: http://root:123456@127.0.0.1:11000/eureka/ # root:123456@
   instance:
     hostname: 127.0.0.1
-    virtual-host-name: oms-user-facade
+    virtual-host-name: oms-back-facade
     lease-expiration-duration-in-seconds: 30
     lease-renewal-interval-in-seconds: 10
     prefer-ip-address: true
@@ -21,7 +21,7 @@ eureka:
 
 spring:
   application:
-    name: oms-User-Facde
+    name: oms-Back-Facade
   rabbitmq: 
     host: 127.0.0.1
     port: 5672
@@ -31,7 +31,7 @@ spring:
     config:
       label: master
       profile: dev
-      uri: http://root:123456@127.0.0.1:11000/ #127.0.0.1 192.168.8.114
+      uri: http://root:123456@127.0.0.1:11000/
       username: root
       password: 123456
       discovery: 

@@ -17,12 +17,14 @@ apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.hidetake.ssh'
+apply plugin: 'maven'
 
 group = 'com.jacliu.test'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {
+	mavenLocal()
 	mavenCentral()
 	maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
 	maven { url "https://repo.spring.io/milestone" }
@@ -34,13 +36,14 @@ ext {
 	env = System.getProperty("env") ?: "dev"
     realHost = System.getProperty("realHost") ?: '192.168.8.34'  
     realUser = System.getProperty("realUser") ?:'root'  
-    realPassword = System.getProperty("realPassword") ?:'ItVm905-4' 
+    realPassword = System.getProperty("realPassword") ?:'12345678' 
     cmd = System.getProperty("cmd") ?:'openBrowser.bat ' + realHost
 }
 
 dependencies {
 	compile 'cn.hutool:hutool-all:4.0.8'
 	compile 'com.h2database:h2:1.4.192'
+	compile 'com.jacliu.test:oms-tcore:0.0.1-SNAPSHOT'
 
 	compile('org.springframework.boot:spring-boot-devtools')
 	//compile('org.springframework.cloud:spring-cloud-starter-config')
@@ -55,6 +58,14 @@ dependencyManagement {
 	}
 }
 
+install {
+    repositories.mavenInstaller {
+        pom.version = "$project.version"
+        pom.artifactId = "$project.name"
+        pom.groupId = "$project.group"
+    }
+}
+
 bootRun {
     jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
 }
@@ -63,7 +74,7 @@ ssh.settings {
   knownHosts = allowAnyHosts  
 }  
 
-remotes {  
+remotes {
   	deployServer {  
 	    role 'masterNode'
 	    host = realHost  

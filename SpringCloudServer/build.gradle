@@ -23,24 +23,24 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {
+	mavenLocal()
 	mavenCentral()
 	maven { url "https://repo.spring.io/milestone" }
 	maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
 }
 
-// 192.168.8.34
-// ItVm905-4
 ext {
 	springCloudVersion = 'Finchley.RC1'
 	env = System.getProperty("env") ?: "dev"
     realHost = System.getProperty("realHost") ?: '192.168.8.114'  
     realUser = System.getProperty("realUser") ?:'root'  
     realPassword = System.getProperty("realPassword") ?:'12345678' 
-    cmd = System.getProperty("cmd") ?:'openBrowser.bat ' + realHost
+    openBrowserCmd = System.getProperty("openBrowserCmd") ?:'openBrowser.bat ' + realHost
 }
 
 dependencies {
 	compile 'cn.hutool:hutool-all:4.0.8' 
+	compile 'com.jacliu.test:oms-tcore:0.0.1-SNAPSHOT'
 	
 	compile('org.springframework.boot:spring-boot-devtools')
 	compile('org.springframework.boot:spring-boot-starter-web')
@@ -49,7 +49,7 @@ dependencies {
 	compile('org.springframework.cloud:spring-cloud-config-server')
 	compile('org.springframework.cloud:spring-cloud-starter-config')
 	compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server')
-	compile('org.springframework.cloud:spring-cloud-starter-netflix-zuul') 
+	//compile('org.springframework.cloud:spring-cloud-starter-netflix-zuul') 
 	//compile('org.springframework.cloud:spring-cloud-starter-bus-amqp')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
@@ -77,7 +77,7 @@ remotes {
 }  
 
 // java -Xms128m -Xmx256m -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8081,suspend=n -jar /data/app/test.jar --spring.profiles.active=dev &
-// –spring.profiles.active=dev -Dlogging.path=/
+// –spring.profiles.active=dev -Dlogging.path=/ --server.port=10100 
 def buildName = "$rootProject.name"+"-"+"$version"
 def buildJar = "$rootProject.name"+"-"+"$version"+".jar"
 task aaa(dependsOn:build) <<{
@@ -89,7 +89,11 @@ task deploy(dependsOn:build) << {
     	execute ' rm -rf /home/clouds/SpringCloudServer-0.0.1-SNAPSHOT.jar '
     	execute ' kill -9 ` ps -ef | grep  SpringCloudServer-0.0.1-SNAPSHOT  | awk \'NR==1 { print $2 }\' ` '
 		put from: buildDir.toString() + '/libs/SpringCloudServer-0.0.1-SNAPSHOT.jar', into: '/home/clouds/'
-		execute ' nohup /home/jdkHome/jdk8/bin/java -jar /home/clouds/SpringCloudServer-0.0.1-SNAPSHOT.jar --server.port=10100 >/home/clouds/logs/SpringCloudServer.log 2>&1 & '
+		execute ' nohup /home/apps/jdkHome/jdk8/bin/java -jar /home/clouds/SpringCloudServer-0.0.1-SNAPSHOT.jar -–spring.profiles.active=dev --server.port=11000  >/home/clouds/logs/SpringCloudServer.log 2>&1 & '
     }  
   }  
+}
+
+task openBrowser(dependsOn: deploy) << {
+	def cmdResult = openBrowserCmd.execute().text.trim()
 }

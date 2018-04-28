@@ -3,6 +3,7 @@ buildscript {
 		springBootVersion = '2.0.1.RELEASE'
 	}
 	repositories {
+		mavenLocal()
 		mavenCentral()
 		maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
 	}
@@ -23,6 +24,7 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {
+	mavenLocal()
 	mavenCentral()
 	maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
 	maven { url "https://repo.spring.io/milestone" }
@@ -42,6 +44,8 @@ dependencies {
 	compile 'cn.hutool:hutool-all:4.0.8'
 	compile 'io.springfox:springfox-swagger2:2.6.1'
 	compile 'io.springfox:springfox-swagger-ui:2.6.1'
+	compile 'com.jacliu.test:oms-tcore:0.0.1-SNAPSHOT'
+	compile 'com.jacliu.test:oms-user-dao:0.0.1-SNAPSHOT'
 
 	compile('org.springframework.boot:spring-boot-devtools')
 	compile('org.springframework.boot:spring-boot-starter-web')
@@ -77,19 +81,13 @@ remotes {
   }
 }  
 
-// –spring.profiles.active=dev -Dlogging.path=/
-def buildName = "$rootProject.name"+"-"+"$version"
-def buildJar = "$rootProject.name"+"-"+"$version"+".jar"
-task aaa(dependsOn:build) <<{
-	println(buildDir.toString() + '/libs/'+buildName);
-}
 task deploy(dependsOn:build) << { 
   ssh.run {  
     session(remotes.deployServer) {  
     	execute ' rm -rf /home/clouds/oms-user-facade-0.0.1-SNAPSHOT.jar '
     	execute ' kill -9 ` ps -ef | grep  oms-user-facade-0.0.1-SNAPSHOT  | awk \'NR==1 { print $2 }\' ` '
 		put from: buildDir.toString() + '/libs/oms-user-facade-0.0.1-SNAPSHOT.jar', into: '/home/clouds/'
-		execute ' nohup /home/jdkHome/jdk8/bin/java -jar /home/clouds/oms-user-facade-0.0.1-SNAPSHOT.jar --server.port=10100 >/home/clouds/logs/oms-user-facade.log 2>&1 & '
+		execute ' nohup /home/apps/jdkHome/jdk8/bin/java -jar /home/clouds/oms-user-facade-0.0.1-SNAPSHOT.jar --server.port=10100 >/home/clouds/logs/oms-user-facade.log 2>&1 & '
     }  
   }  
 }

@@ -1,0 +1,32 @@
+server:
+  port: 12000
+  
+eureka:
+  client:
+    service-url:
+      defaultZone: http://root:123456@127.0.0.1:11000/eureka/ # root:123456@
+  instance:
+    hostname: localhost
+    virtual-host-name: api-gateway
+    prefer-ip-address: true
+    ip-address: 127.0.0.1 
+    instance-id: ${eureka.instance.ip-address}:${server.port} #${spring.application.name}:${spring.application.instance_id:${server.port}}
+
+spring:
+  application:
+    name: api-gateway
+
+zuul: 
+  prefix: /oms #为zuul设置一个公共的前缀
+  #ignoredServices: '*'
+  routes:
+    omsUser:
+      path: /user/**
+      serviceId: omsUserFacade
+    omsOrder:
+      path: /order/**
+      serviceId: omsOrderFacade
+    
+logging:
+  file:
+    logs/${spring.application.name}.log
